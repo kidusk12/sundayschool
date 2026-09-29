@@ -115,13 +115,19 @@ class MarkColumnForm(forms.ModelForm):
     class Meta:
         model = MarkColumn
         fields = ["name", "max_score"]
+        error_messages = {
+            "name": {"required": "የአምድ ስም ያስፈልጋል።"},
+            "max_score": {"invalid": "ትክክለኛ ቁጥር ያስገቡ።"},
+        }
 
 
-class RosterTableForm(forms.ModelForm):
+class RosterColumnForm(forms.ModelForm):
     class Meta:
-        model = RosterTable
-        fields = ["year", "semester"]
-
+        model = RosterColumn
+        fields = ["subject_name"]
+        error_messages = {
+            "subject_name": {"required": "የትምህርት ስም ያስፈልጋል።"},
+        }
 
 class RosterColumnForm(forms.ModelForm):
     class Meta:

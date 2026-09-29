@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load ethio %}
+
+{% block title %}የእንቅስቃሴ መዝገብ · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<h1 class="mb-6 text-2xl font-semibold text-emerald-900">የእንቅስቃሴ መዝገብ</h1>
+
+<form method="get" class="mb-6 flex flex-wrap items-end gap-3 rounded-md border border-stone-200 bg-white p-4">
+    <div>
+        <label class="mb-1 block text-xs text-stone-500">ተጠቃሚ</label>
+        <select name="actor" class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <option value="">ሁሉም</option>
+            {% for actor in actors %}
+            <option value="{{ actor.pk }}" {% if filters.actor == actor.pk|stringformat:"s" %}selected{% endif %}>{{ actor.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="mb-1 block text-xs text-stone-500">ተግባር</label>
+        <select name="action" class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <option value="">ሁሉም</option>
+            {% for value, display in actions %}
+            <option value="{{ value }}" {% if filters.action == value %}selected{% endif %}>{{ display }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="mb-1 block text-xs text-stone-500">የነገር አይነት</label>
+        <select name="object_type" class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <option value="">ሁሉም</option>
+            {% for ot in object_types %}
+            <option value="{{ ot }}" {% if filters.object_type == ot %}selected{% endif %}>{{ ot }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="mb-1 block text-xs text-stone-500">ክፍል</label>
+        <select name="classroom" class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <option value="">ሁሉም</option>
+            {% for classroom in classrooms %}
+            <option value="{{ classroom.pk }}" {% if filters.classroom == classroom.pk|stringformat:"s" %}selected{% endif %}>{{ classroom.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="mb-1 block text-xs text-stone-500">ከቀን</label>
+        <input type="date" name="from" value="{{ filters.from }}"
+               class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+    </div>
+    <div>
+        <label class="mb-1 block text-xs text-stone-500">እስከ ቀን</label>
+        <input type="date" name="to" value="{{ filters.to }}"
+               class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+    </div>
+    <button type="submit" class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900">
+        አጣራ
+    </button>
+</form>
+
+{% if page %}
+<div class="table-scroll bg-white">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ቀን</th>
+                <th class="text-left">ተጠቃሚ</th>
+                <th class="text-left">ተግባር</th>
+                <th class="text-left">ነገር</th>
+                <th class="text-left">ክፍል</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in page %}
+            <tr class="border-t border-stone-100">
+                <td class="px-3 py-2 text-center text-stone-600">{{ log.timestamp|eth_date_weekday }}</td>
+                <td class="px-3 py-2">{{ log.actor_name|default:"—" }}</td>
+                <td class="px-3 py-2">{{ log.get_action_display }}</td>
+                <td class="px-3 py-2 text-stone-600">{{ log.object_type }}: {{ log.object_label }}</td>
+                <td class="px-3 py-2 text-stone-600">{{ log.classroom.name|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page.has_other_pages %}
+<div class="mt-4 flex justify-center gap-2 text-sm">
+    {% if page.has_previous %}
+    <a href="?page={{ page.previous_page_number }}" class="text-emerald-800 hover:underline">← ቀዳሚ</a>
+    {% endif %}
+    <span class="text-stone-500">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}
+    <a href="?page={{ page.next_page_number }}" class="text-emerald-800 hover:underline">ቀጣይ →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% else %}
+<div class="rounded-md border border-dashed border-stone-300 bg-white p-6 text-center text-sm text-stone-600">
+    ምንም መዝገብ አልተገኘም።
+</div>
+{% endif %}
+{% endblock %}

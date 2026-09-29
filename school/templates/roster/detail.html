@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load ethio %}
+
+{% block title %}ሮስተር · {{ roster.classroom.name }} · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <p class="text-sm text-stone-500">
+            <a href="{% url 'school:roster_list' classroom_id=roster.classroom.pk %}" class="hover:underline">← ወደ ሮስተሮች ተመለሱ</a>
+        </p>
+        <h1 class="text-2xl font-semibold text-emerald-900">{{ roster.classroom.name }} — ሮስተር</h1>
+        <p class="mt-1 text-sm text-stone-500">
+            {{ roster.year|default:"—" }} / {{ roster.semester|default:"—" }}
+            {% if roster.calculated_at %} · {{ roster.calculated_at|eth_date }} ተሰልቷል{% endif %}
+        </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'school:roster_edit_header' roster_id=roster.pk %}"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">መረጃ አስተካክል</a>
+        <form method="post" action="{% url 'school:roster_duplicate' roster_id=roster.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">አባዛ</button>
+        </form>
+        <a href="{% url 'school:roster_export' roster_id=roster.pk %}?format=pdf"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">PDF</a>
+        <a href="{% url 'school:roster_export' roster_id=roster.pk %}?format=xlsx"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">Excel</a>
+    </div>
+</div>
+
+{% include "partials/_roster_table.html" %}
+{% endblock %}

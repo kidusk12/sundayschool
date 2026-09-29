@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load ethio %}
+
+{% block title %}{{ title }} · {{ sheet.classroom.name }} · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <p class="text-sm text-stone-500">
+            <a href="{% url 'school:attendance_sheet_list' classroom_id=sheet.classroom.pk %}" class="hover:underline">{{ sheet.classroom.name }} — መገኘት</a>
+        </p>
+        <h1 class="text-2xl font-semibold text-emerald-900">{{ title }}</h1>
+    </div>
+    {% if not sheet.is_template %}
+    <div class="flex gap-2">
+        <a href="{% url 'school:attendance_sheet_export' sheet_id=sheet.pk %}?format=pdf"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">PDF</a>
+        <a href="{% url 'school:attendance_sheet_export' sheet_id=sheet.pk %}?format=xlsx"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">Excel</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if sheet.is_template %}
+<div class="rounded-md border border-dashed border-stone-300 bg-white p-6 text-sm text-stone-600">
+    ይህ አብነት ወርሃዊ ሉህ ነው፤ ተማሪ ማከል አይቻልም። አዲስ ወር ለመክፈት ወደ ወርሃዊ ዝርዝሩ ተመለሱ።
+</div>
+{% else %}
+{% include "partials/_attendance_table.html" %}
+{% endif %}
+{% endblock %}

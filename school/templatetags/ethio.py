@@ -48,3 +48,10 @@ def eth_month_name(month_number):
         return ethiopic.MONTHS[int(month_number) - 1]
     except (TypeError, ValueError, IndexError):
         return ""
+
+@register.filter(name="add_class")
+def add_class(field, css):
+    """Applies Tailwind classes to any bound field's widget, regardless of
+    type (text, number, date, select, textarea) — used by partials/_field.html
+    so the 11-field student form isn't hand-written field by field."""
+    return field.as_widget(attrs={"class": css})

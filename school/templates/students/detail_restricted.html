@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load ethio %}
+
+{% block title %}ተማሪ · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-md">
+    <h1 class="mb-4 text-2xl font-semibold text-emerald-900">የተማሪ መረጃ</h1>
+    <div class="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-stone-700">
+        <p>ይህ ተማሪ በ{{ student.classroom.name }} ክፍል ውስጥ በ{{ student.registered_at|eth_date }} ተመዝግቧል፣ ነገር ግን ሙሉ ዝርዝር ማየት አይቻልም።</p>
+    </div>
+</div>
+{% endblock %}

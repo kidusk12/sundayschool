@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load ethio %}
+
+{% block title %}ጥያቄ ይመልከቱ · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-md">
+    <h1 class="mb-4 text-2xl font-semibold text-emerald-900">ጥያቄ ይመልከቱ</h1>
+
+    <div class="mb-4 space-y-2 rounded-md border border-stone-200 bg-white p-4 text-sm">
+        <p><span class="text-stone-500">ነገር:</span> {{ removal_request.target_label }}</p>
+        <p><span class="text-stone-500">ክፍል:</span> {{ removal_request.classroom.name }}</p>
+        <p><span class="text-stone-500">ምክንያት:</span> {{ removal_request.reason }}</p>
+        <p><span class="text-stone-500">ጠያቂ:</span> {{ removal_request.requested_by.username|default:"—" }}</p>
+        <p><span class="text-stone-500">ቀን:</span> {{ removal_request.requested_at|eth_date }}</p>
+    </div>
+
+    <form method="post" class="flex flex-wrap gap-3">
+        {% csrf_token %}
+        <button type="submit" name="action" value="delete"
+                onclick="return confirm('በርግጥ ይህን ማጥፋት ይፈልጋሉ? ይህ ተግባር መመለስ አይቻልም።');"
+                class="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800">
+            አጥፋ
+        </button>
+        <button type="submit" name="action" value="dismiss"
+                class="rounded-md border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
+            ውድቅ አድርግ
+        </button>
+        <a href="{% url 'school:removal_pending_list' %}" class="self-center text-sm text-stone-600 hover:text-stone-900">ተመለስ</a>
+    </form>
+</div>
+{% endblock %}

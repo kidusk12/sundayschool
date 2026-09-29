@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ mark_list.name }} · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <p class="text-sm text-stone-500">
+            <a href="{% url 'school:mark_list_list' classroom_id=mark_list.classroom.pk %}" class="hover:underline">← ወደ ዝርዝሮች ተመለሱ</a>
+        </p>
+        <h1 class="text-2xl font-semibold text-emerald-900">{{ mark_list.name }}</h1>
+        <p class="mt-1 text-sm text-stone-500">
+            {{ mark_list.teacher|default:"—" }} · {{ mark_list.subject|default:"—" }} · {{ mark_list.year }} / {{ mark_list.semester }}
+        </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'school:mark_list_edit_header' mark_list_id=mark_list.pk %}"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">መረጃ አስተካክል</a>
+        <form method="post" action="{% url 'school:mark_list_duplicate' mark_list_id=mark_list.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">አባዛ</button>
+        </form>
+        <a href="{% url 'school:mark_list_export' mark_list_id=mark_list.pk %}"
+           class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">PDF</a>
+    </div>
+</div>
+
+{% include "partials/_mark_table.html" %}
+{% endblock %}

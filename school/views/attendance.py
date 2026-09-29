@@ -2,7 +2,9 @@ from datetime import date
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-
+from ..audit import log_action
+from ..models import ActivityLog
+    
 from .. import ethiopic, exports, permissions, services
 from ..models import AttendanceEntry, AttendanceRow, AttendanceSheet, Student
 
@@ -45,8 +47,6 @@ def sheet_create(request, classroom_id):
 
 
 def _sheet_context(sheet):
-    """Shared by the full-page view and the htmx fragment views below, so both
-    always build the table from exactly the same data/shape."""
     sundays = [] if sheet.is_template else ethiopic.sundays_in_month(
         sheet.ethiopian_year, sheet.ethiopian_month
     )
@@ -92,9 +92,6 @@ def sheet_detail(request, sheet_id):
 
 @permissions.attendance_sheet_access_required(url_kwarg="sheet_id")
 def add_student(request, sheet_id):
-    """The manual 'Add student' action — the ONLY way a student's row reaches
-    this sheet (SRS §4.3). Returns just the table fragment for htmx; a
-    non-htmx POST (JS disabled) redirects back to the full page instead."""
     sheet = request.sheet
     student_id = request.POST.get("student_id")
     student = get_object_or_404(Student, pk=student_id, classroom=sheet.classroom)
@@ -105,14 +102,12 @@ def add_student(request, sheet_id):
         messages.error(request, str(exc))
 
     if request.htmx:
-        return render(request, "attendance/_table.html", _sheet_context(sheet))
+        return render(request, "partials/_attendance_table.html", _sheet_context(sheet))
     return redirect("school:attendance_sheet_detail", sheet_id=sheet.pk)
 
 
 @permissions.attendance_sheet_access_required(url_kwarg="sheet_id")
 def mark_cell(request, sheet_id):
-    """One click on one cell = one request. Expects row_id, sunday (ISO date
-    string), and status ('present'/'absent'/'permission'/'' to clear)."""
     sheet = request.sheet
     row = get_object_or_404(AttendanceRow, pk=request.POST.get("row_id"), sheet=sheet)
     sunday_date = date.fromisoformat(request.POST["sunday"])
@@ -124,11 +119,14 @@ def mark_cell(request, sheet_id):
         services.clear_attendance_entry(row=row, sunday_date=sunday_date, user=request.user)
 
     if request.htmx:
+        n = AttendanceRow.objects.filter(
+            sheet=sheet, student__name_key__lt=row.student.name_key
+        ).count() + 1
         by_date = {e.sunday_date: e.status for e in row.entries.all()}
         totals = services.attendance_totals(row)
-        return render(request, "attendance/_row.html", {
+        return render(request, "partials/_attendance_row.html", {
             "row": {
-                "row": row, "student": row.student,
+                "n": n, "row": row, "student": row.student,
                 "cells": [{"date": d, "status": by_date.get(d, "")} for d in ethiopic.sundays_in_month(
                     sheet.ethiopian_year, sheet.ethiopian_month
                 )],
@@ -144,8 +142,6 @@ def sheet_export(request, sheet_id):
     context = _sheet_context(sheet)
     fmt = request.GET.get("format", "pdf")
 
-    from ..audit import log_action
-    from ..models import ActivityLog
     log_action(actor=request.user, action=ActivityLog.Action.EXPORT, obj=sheet, classroom=sheet.classroom)
 
     if fmt == "xlsx":

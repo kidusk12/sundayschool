@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.full_name }} አስተካክል · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+    <h1 class="mb-6 text-2xl font-semibold text-emerald-900">{{ student.full_name }} — አስተካክል</h1>
+
+    <form method="post" class="space-y-5 rounded-md border border-stone-200 bg-white p-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            {% include "partials/_field.html" with field=form.first_name %}
+            {% include "partials/_field.html" with field=form.father_name %}
+            {% include "partials/_field.html" with field=form.grandfather_name %}
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=form.age %}
+            {% include "partials/_field.html" with field=form.birth_date %}
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=form.registered_at %}
+
+            {% if perms_is_head %}
+                {% include "partials/_field.html" with field=form.classroom %}
+            {% else %}
+            <div>
+                <label class="mb-1 block text-sm font-medium text-stone-700">ክፍል</label>
+                <p class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600">{{ student.classroom.name }}</p>
+                <input type="hidden" name="{{ form.classroom.html_name }}" value="{{ student.classroom.pk }}">
+                <p class="mt-1 text-xs text-stone-500">ክፍል መቀየር የሚችለው ኃላፊ ብቻ ነው።</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            {% include "partials/_field.html" with field=form.phone %}
+            {% include "partials/_field.html" with field=form.parent_phone_1 %}
+            {% include "partials/_field.html" with field=form.parent_phone_2 %}
+        </div>
+
+        {% include "partials/_field.html" with field=form.background_notes %}
+
+        <div class="flex items-center gap-3">
+            <button type="submit"
+                    class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900">
+                አስቀምጥ
+            </button>
+            <a href="{% url 'school:student_detail' student_id=student.pk %}" class="text-sm text-stone-600 hover:text-stone-900">ተመለስ</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

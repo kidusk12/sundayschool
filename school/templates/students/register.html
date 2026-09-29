@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}ተማሪ መዝግብ · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+    <h1 class="mb-6 text-2xl font-semibold text-emerald-900">ተማሪ መዝግብ</h1>
+
+    <form method="post" class="space-y-5 rounded-md border border-stone-200 bg-white p-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+        {% endif %}
+
+        <div id="name-search-fields" class="grid gap-4 sm:grid-cols-3">
+            <div>
+                <label for="{{ form.first_name.id_for_label }}" class="mb-1 block text-sm font-medium text-stone-700">የመጀመሪያ ስም *</label>
+                <input type="text" name="{{ form.first_name.html_name }}" id="{{ form.first_name.id_for_label }}"
+                       value="{{ form.first_name.value|default:'' }}" required autofocus
+                       hx-get="{% url 'school:student_search' %}"
+                       hx-trigger="keyup changed delay:500ms, change"
+                       hx-target="#student-search-result" hx-swap="innerHTML"
+                       hx-include="#name-search-fields input"
+                       class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+                {% for error in form.first_name.errors %}<p class="mt-1 text-sm text-red-700">{{ error }}</p>{% endfor %}
+            </div>
+            <div>
+                <label for="{{ form.father_name.id_for_label }}" class="mb-1 block text-sm font-medium text-stone-700">የአባት ስም *</label>
+                <input type="text" name="{{ form.father_name.html_name }}" id="{{ form.father_name.id_for_label }}"
+                       value="{{ form.father_name.value|default:'' }}" required
+                       hx-get="{% url 'school:student_search' %}"
+                       hx-trigger="keyup changed delay:500ms, change"
+                       hx-target="#student-search-result" hx-swap="innerHTML"
+                       hx-include="#name-search-fields input"
+                       class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+                {% for error in form.father_name.errors %}<p class="mt-1 text-sm text-red-700">{{ error }}</p>{% endfor %}
+            </div>
+            <div>
+                <label for="{{ form.grandfather_name.id_for_label }}" class="mb-1 block text-sm font-medium text-stone-700">የአያት ስም *</label>
+                <input type="text" name="{{ form.grandfather_name.html_name }}" id="{{ form.grandfather_name.id_for_label }}"
+                       value="{{ form.grandfather_name.value|default:'' }}" required
+                       hx-get="{% url 'school:student_search' %}"
+                       hx-trigger="keyup changed delay:500ms, change"
+                       hx-target="#student-search-result" hx-swap="innerHTML"
+                       hx-include="#name-search-fields input"
+                       class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+                {% for error in form.grandfather_name.errors %}<p class="mt-1 text-sm text-red-700">{{ error }}</p>{% endfor %}
+            </div>
+        </div>
+
+        <div id="student-search-result"></div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=form.age %}
+            {% include "partials/_field.html" with field=form.birth_date %}
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=form.registered_at %}
+            {% include "partials/_field.html" with field=form.classroom %}
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            {% include "partials/_field.html" with field=form.phone %}
+            {% include "partials/_field.html" with field=form.parent_phone_1 %}
+            {% include "partials/_field.html" with field=form.parent_phone_2 %}
+        </div>
+
+        {% include "partials/_field.html" with field=form.background_notes %}
+
+        <button type="submit"
+                class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900">
+            መዝግብ
+        </button>
+    </form>
+</div>
+{% endblock %}

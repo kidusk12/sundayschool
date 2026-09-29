@@ -40,11 +40,14 @@ def request_removal(request, kind, object_id):
 
     form = RemovalRequestForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        services.file_removal_request(
-            target=target, reason=form.cleaned_data["reason"], user=request.user
-        )
-        return redirect("school:class_detail", classroom_id=classroom.pk)
-
+            try:
+             services.file_removal_request(
+                target=target, reason=form.cleaned_data["reason"], user=request.user
+               )
+            except registry.NotRemovableError:
+                return render(request, "removal/not_removable.html", status=400)
+            return redirect("school:class_detail", classroom_id=classroom.pk)
+    
     return render(request, "removal/request_form.html", {
         "form": form,
         "target": target,

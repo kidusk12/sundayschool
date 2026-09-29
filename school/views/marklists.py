@@ -1,5 +1,9 @@
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.http import HttpResponse
 
 from .. import exports, permissions, services
 from ..audit import log_action
@@ -87,7 +91,7 @@ def add_student(request, mark_list_id):
         messages.error(request, str(exc))
 
     if request.htmx:
-        return render(request, "marklists/_table.html", _mark_list_context(mark_list))
+        return render(request, "partials/_mark_table.html", _mark_list_context(mark_list))
     return redirect("school:mark_list_detail", mark_list_id=mark_list.pk)
 
 
@@ -105,11 +109,18 @@ def column_create(request, mark_list_id):
         for mark in mark_list.marks.all():
             MarkColumnScore.objects.get_or_create(mark=mark, column=column)
         log_action(actor=request.user, action=ActivityLog.Action.CREATE, obj=column, classroom=mark_list.classroom)
+    elif request.method == "POST":
+        for errors in form.errors.values():
+            for error in errors:
+                messages.error(request, error)
 
     if request.htmx:
-        return render(request, "marklists/_table.html", _mark_list_context(mark_list))
+        table_html = render_to_string(
+            request=request, template_name="partials/_mark_table.html", context=_mark_list_context(mark_list)
+        )
+        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+        return HttpResponse(table_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>')
     return redirect("school:mark_list_detail", mark_list_id=mark_list.pk)
-
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def column_delete(request, mark_list_id, column_id):
@@ -119,8 +130,19 @@ def column_delete(request, mark_list_id, column_id):
     column.delete()
 
     if request.htmx:
-        return render(request, "marklists/_table.html", _mark_list_context(mark_list))
+        return render(request, "partials/_mark_table.html", _mark_list_context(mark_list))
     return redirect("school:mark_list_detail", mark_list_id=mark_list.pk)
+
+
+def _parse_decimal(raw):
+    """('123.5', True) style — returns (value, ok). Blank is allowed and means 'clear'."""
+    raw = (raw or "").strip()
+    if not raw:
+        return None, True
+    try:
+        return Decimal(raw), True
+    except InvalidOperation:
+        return None, False
 
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
@@ -130,15 +152,35 @@ def update_cell(request, mark_list_id):
     mark = get_object_or_404(Mark, pk=request.POST.get("mark_id"), mark_list=mark_list)
 
     if "total" in request.POST:
-        value = request.POST["total"].strip()
-        services.set_mark_total(mark=mark, total=value or None, user=request.user)
+        value, ok = _parse_decimal(request.POST["total"])
+        if ok:
+            services.set_mark_total(mark=mark, total=value, user=request.user)
+        else:
+            messages.error(request, "ትክክለኛ ቁጥር ያስገቡ።")
     elif "column_id" in request.POST:
         column = get_object_or_404(MarkColumn, pk=request.POST["column_id"], mark_list=mark_list)
-        value = request.POST.get("score", "").strip()
-        services.set_mark_column_score(mark=mark, column=column, score=value or None, user=request.user)
+        value, ok = _parse_decimal(request.POST.get("score", ""))
+        if ok:
+            services.set_mark_column_score(mark=mark, column=column, score=value, user=request.user)
+        else:
+            messages.error(request, "ትክክለኛ ቁጥር ያስገቡ።")
 
     if request.htmx:
-        return render(request, "marklists/_table.html", _mark_list_context(mark_list))
+        n = Mark.objects.filter(
+            mark_list=mark_list, student__name_key__lt=mark.student.name_key
+        ).count() + 1
+        by_column = {cs.column_id: cs.score for cs in mark.column_scores.all()}
+        row_html = render_to_string(request=request, template_name="partials/_mark_row.html", context={
+            "row": {
+                "n": n, "mark": mark, "student": mark.student,
+                "total": mark.total, "scores": by_column,
+            },
+            "columns": list(mark_list.columns.all()),
+        })
+        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+        return HttpResponse(
+            row_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>'
+        )
     return redirect("school:mark_list_detail", mark_list_id=mark_list.pk)
 
 

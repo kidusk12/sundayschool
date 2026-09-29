@@ -1,5 +1,9 @@
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 
 from .. import exports, permissions, services
 from ..audit import log_action
@@ -9,16 +13,12 @@ from ..models import ActivityLog, RosterColumn, RosterRow
 
 @permissions.classroom_access_required(url_kwarg="classroom_id")
 def roster_list(request, classroom_id):
-    """A class's saved rosters, one per year/semester — click one to open it,
-    same pattern as attendance's one-sheet-per-month (SRS §4.6)."""
     rosters = request.classroom.rosters.order_by("-created_at")
     return render(request, "roster/list.html", {"classroom": request.classroom, "rosters": rosters})
 
 
 @permissions.classroom_access_required(url_kwarg="classroom_id")
 def roster_create(request, classroom_id):
-    """Brand-new (not duplicate): pre-filled with every current student, no
-    columns/scores yet — a roster is whole-class by nature (§4.6)."""
     form = RosterTableForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         roster = services.create_roster(
@@ -32,8 +32,6 @@ def roster_create(request, classroom_id):
 
 @permissions.roster_access_required(url_kwarg="roster_id")
 def roster_duplicate(request, roster_id):
-    """Carries over only the student list — year, semester, columns, scores,
-    average/rank all start blank on the copy (§4.6)."""
     new_roster = services.duplicate_roster(roster=request.roster, user=request.user)
     messages.success(request, "ሮስተር ተባዝቷል።")
     return redirect("school:roster_detail", roster_id=new_roster.pk)
@@ -68,11 +66,8 @@ def roster_edit_header(request, roster_id):
         "form": form, "classroom": request.roster.classroom, "is_new": False, "roster": request.roster,
     })
 
-
 @permissions.roster_access_required(url_kwarg="roster_id")
 def column_create(request, roster_id):
-    """Owner-typed subject names — not linked to any real MarkList (§4.6).
-    Structural, so no removal-request gate, same as mark-list columns."""
     roster = request.roster
     form = RosterColumnForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -81,9 +76,17 @@ def column_create(request, roster_id):
         column.order = roster.columns.count()
         column.save()
         log_action(actor=request.user, action=ActivityLog.Action.CREATE, obj=column, classroom=roster.classroom)
+    elif request.method == "POST":
+        for errors in form.errors.values():
+            for error in errors:
+                messages.error(request, error)
 
     if request.htmx:
-        return render(request, "roster/_table.html", _roster_context(roster))
+        table_html = render_to_string(
+            request=request, template_name="partials/_roster_table.html", context=_roster_context(roster)
+        )
+        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+        return HttpResponse(table_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>')
     return redirect("school:roster_detail", roster_id=roster.pk)
 
 
@@ -95,8 +98,18 @@ def column_delete(request, roster_id, column_id):
     column.delete()
 
     if request.htmx:
-        return render(request, "roster/_table.html", _roster_context(roster))
+        return render(request, "partials/_roster_table.html", _roster_context(roster))
     return redirect("school:roster_detail", roster_id=roster.pk)
+
+
+def _parse_decimal(raw):
+    raw = (raw or "").strip()
+    if not raw:
+        return None, True
+    try:
+        return Decimal(raw), True
+    except InvalidOperation:
+        return None, False
 
 
 @permissions.roster_access_required(url_kwarg="roster_id")
@@ -104,11 +117,29 @@ def update_cell(request, roster_id):
     roster = request.roster
     row = get_object_or_404(RosterRow, pk=request.POST.get("row_id"), roster=roster)
     column = get_object_or_404(RosterColumn, pk=request.POST.get("column_id"), roster=roster)
-    value = request.POST.get("score", "").strip()
-    services.set_roster_score(row=row, column=column, score=value or None, user=request.user)
+    value, ok = _parse_decimal(request.POST.get("score", ""))
+
+    if ok:
+        services.set_roster_score(row=row, column=column, score=value, user=request.user)
+    else:
+        messages.error(request, "ትክክለኛ ቁጥር ያስገቡ።")
 
     if request.htmx:
-        return render(request, "roster/_table.html", _roster_context(roster))
+        n = RosterRow.objects.filter(
+            roster=roster, student__name_key__lt=row.student.name_key
+        ).count() + 1
+        by_column = {s.column_id: s.score for s in row.scores.all()}
+        row_html = render_to_string(request=request, template_name="partials/_roster_row.html", context={
+            "row": {
+                "n": n, "row": row, "student": row.student,
+                "average": row.average, "rank": row.rank, "scores": by_column,
+            },
+            "columns": list(roster.columns.all()),
+        })
+        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+        return HttpResponse(
+            row_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>'
+        )
     return redirect("school:roster_detail", roster_id=roster.pk)
 
 

@@ -1,0 +1,65 @@
+{% load ethio %}
+<div id="mark-list-table-container">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <form hx-post="{% url 'school:mark_list_add_student' mark_list_id=mark_list.pk %}"
+              hx-target="#mark-list-table-container" hx-swap="outerHTML"
+              class="flex items-center gap-2">
+            {% csrf_token %}
+            <select name="student_id" required
+                    class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+                <option value="">ተማሪ ይምረጡ...</option>
+                {% for student in available_students %}
+                <option value="{{ student.pk }}">{{ student.full_name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit"
+                    class="rounded-md bg-emerald-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-900">
+                ተማሪ ጨምር
+            </button>
+        </form>
+
+        <form hx-post="{% url 'school:mark_list_column_create' mark_list_id=mark_list.pk %}"
+              hx-target="#mark-list-table-container" hx-swap="outerHTML"
+              class="flex items-center gap-2">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="የአምድ ስም" required
+                   class="w-28 rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <input type="number" name="max_score" placeholder="ከፍተኛ ውጤት" step="0.01"
+                   class="w-24 rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <button type="submit"
+                    class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">
+                አምድ ጨምር
+            </button>
+        </form>
+    </div>
+
+    <div class="table-scroll bg-white">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-left">ስም</th>
+                    {% for column in columns %}
+                    <th>
+                        {{ column.name }}{% if column.max_score %} ({{ column.max_score }}){% endif %}
+                        <form method="post" action="{% url 'school:mark_list_column_delete' mark_list_id=mark_list.pk column_id=column.pk %}"
+                              class="inline" onsubmit="return confirm('ይህን አምድ ማጥፋት ይፈልጋሉ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="ml-1 text-stone-400 hover:text-red-600">✕</button>
+                        </form>
+                    </th>
+                    {% endfor %}
+                    <th>ጠቅላላ</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                {% include "partials/_mark_row.html" %}
+                {% empty %}
+                <tr><td colspan="{{ columns|length|add:4 }}" class="px-3 py-4 text-center text-stone-500">ምንም ተማሪ አልተጨመረም።</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

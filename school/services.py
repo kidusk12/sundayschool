@@ -12,6 +12,7 @@ from .models import (
     ActivityLog,
     AttendanceEntry,
     AttendanceRow,
+    AttendanceSheet,
     ClassAssignment,
     Mark,
     MarkList,
@@ -312,6 +313,8 @@ def file_removal_request(*, target, reason, user):
         raise registry.NotRemovableError(
             f"{type(target).__name__} cannot be requested for removal."
         )
+    if isinstance(target, AttendanceSheet) and target.is_template:
+        raise registry.NotRemovableError("The template attendance sheet cannot be removed.")
     classroom = registry.get_classroom_for(target)
 
     request = RemovalRequest.objects.create(
@@ -330,7 +333,6 @@ def file_removal_request(*, target, reason, user):
     )
     return request
 
-
 @transaction.atomic
 def resolve_removal_request(*, request, approve, user):
     target = request.content_object
@@ -340,7 +342,8 @@ def resolve_removal_request(*, request, approve, user):
         request.resolved_by = user
         request.resolved_at = timezone.now()
         request.save()
-        delete_object(obj=target, user=user)
+        if target is not None:
+            delete_object(obj=target, user=user)
     else:
         request.status = RemovalRequest.Status.DISMISSED
         request.resolved_by = user
@@ -353,7 +356,6 @@ def resolve_removal_request(*, request, approve, user):
             classroom=request.classroom,
         )
     return request
-
 
 # ---------------------------------------------------------------------------
 # Central deletion — used by Head direct-delete and by removal resolution

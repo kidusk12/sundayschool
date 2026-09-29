@@ -1,0 +1,54 @@
+{% load ethio %}
+<div id="roster-table-container">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <form hx-post="{% url 'school:roster_column_create' roster_id=roster.pk %}"
+              hx-target="#roster-table-container" hx-swap="outerHTML"
+              class="flex items-center gap-2">
+            {% csrf_token %}
+            <input type="text" name="subject_name" placeholder="የትምህርት ስም" required
+                   class="w-32 rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+            <button type="submit"
+                    class="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">
+                አምድ ጨምር
+            </button>
+        </form>
+
+        <form method="post" action="{% url 'school:roster_calculate' roster_id=roster.pk %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900">
+                አማካኝ እና ደረጃ አስላ
+            </button>
+        </form>
+    </div>
+
+    <div class="table-scroll bg-white">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-left">ስም</th>
+                    {% for column in columns %}
+                    <th>
+                        {{ column.subject_name }}
+                        <form method="post" action="{% url 'school:roster_column_delete' roster_id=roster.pk column_id=column.pk %}"
+                              class="inline" onsubmit="return confirm('ይህን አምድ ማጥፋት ይፈልጋሉ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="ml-1 text-stone-400 hover:text-red-600">✕</button>
+                        </form>
+                    </th>
+                    {% endfor %}
+                    <th>አማካኝ</th>
+                    <th>ደረጃ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                {% include "partials/_roster_row.html" %}
+                {% empty %}
+                <tr><td colspan="{{ columns|length|add:4 }}" class="px-3 py-4 text-center text-stone-500">ምንም ተማሪ የለም።</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

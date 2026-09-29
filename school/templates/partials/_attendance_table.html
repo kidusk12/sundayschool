@@ -1,0 +1,48 @@
+{% load ethio %}
+<div id="attendance-table-container">
+    {% if not sheet.is_template %}
+    <div class="mb-3 flex flex-wrap items-center gap-2">
+        <form hx-post="{% url 'school:attendance_add_student' sheet_id=sheet.pk %}"
+              hx-target="#attendance-table-container" hx-swap="outerHTML"
+              class="flex items-center gap-2">
+            {% csrf_token %}
+            <select name="student_id" required
+                    class="rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:border-emerald-600 focus:ring-emerald-600">
+                <option value="">ተማሪ ይምረጡ...</option>
+                {% for student in available_students %}
+                <option value="{{ student.pk }}">{{ student.full_name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit"
+                    class="rounded-md bg-emerald-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-900">
+                ጨምር
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="table-scroll bg-white">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-left">ስም</th>
+                    {% for sunday in sundays %}
+                    <th>{{ sunday|eth_short }}</th>
+                    {% endfor %}
+                    <th>ተገኝቷል</th>
+                    <th>ቀርቷል</th>
+                    <th>ፈቃድ</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="attendance-rows">
+                {% for row in rows %}
+                {% include "partials/_attendance_row.html" %}
+                {% empty %}
+                <tr><td colspan="{{ sundays|length|add:6 }}" class="px-3 py-4 text-center text-stone-500">ምንም ተማሪ አልተጨመረም።</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

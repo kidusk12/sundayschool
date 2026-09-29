@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load ethio %}
+
+{% block title %}የማስወገድ ጥያቄዎች · የሰንበት ትምህርት ቤት{% endblock %}
+
+{% block content %}
+<h1 class="mb-6 text-2xl font-semibold text-emerald-900">የማስወገድ ጥያቄዎች</h1>
+
+{% if requests %}
+<div class="table-scroll bg-white">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="text-left">ነገር</th>
+                <th class="text-left">ምክንያት</th>
+                <th class="text-left">ክፍል</th>
+                <th>ጠያቂ</th>
+                <th>ቀን</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr class="border-t border-stone-100">
+                <td class="px-3 py-2">{{ req.target_label }}</td>
+                <td class="px-3 py-2 text-stone-600">{{ req.reason }}</td>
+                <td class="px-3 py-2 text-stone-600">{{ req.classroom.name }}</td>
+                <td class="px-3 py-2 text-center text-stone-600">{{ req.requested_by.username|default:"—" }}</td>
+                <td class="px-3 py-2 text-center text-stone-600">{{ req.requested_at|eth_date }}</td>
+                <td class="px-3 py-2 text-center">
+                    <a href="{% url 'school:removal_resolve' request_id=req.pk %}" class="text-emerald-800 hover:underline">ይመልከቱ</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="rounded-md border border-dashed border-stone-300 bg-white p-6 text-center text-sm text-stone-600">
+    ምንም በመጠባበቅ ላይ ያለ ጥያቄ የለም።
+</div>
+{% endif %}
+{% endblock %}
