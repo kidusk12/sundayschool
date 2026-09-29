@@ -1,0 +1,133 @@
+{% extends "base.html" %} {% block title %}{% if is_new %}አዲስ ክፍል{% else %}ክፍል
+አስተካክል{% endif %} · የሰንበት ትምህርት ቤት{% endblock %} {% block content %}
+<div class="mx-auto max-w-md">
+  <h1 class="mb-6 text-2xl font-semibold text-emerald-900">
+    {% if is_new %}አዲስ ክፍል{% else %}{{ classroom.name }} — አስተካክል{% endif %}
+  </h1>
+
+  <form
+    method="post"
+    class="space-y-4 rounded-md border border-stone-200 bg-white p-5"
+  >
+    {% csrf_token %} {% if form.non_field_errors %}
+    <div
+      class="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800"
+    >
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div>
+      <label
+        for="{{ form.name.id_for_label }}"
+        class="mb-1 block text-sm font-medium text-stone-700"
+        >የክፍል ስም</label
+      >
+      <input
+        type="text"
+        name="{{ form.name.html_name }}"
+        id="{{ form.name.id_for_label }}"
+        value="{{ form.name.value|default:'' }}"
+        autofocus
+        required
+        class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600"
+      />
+      {% for error in form.name.errors %}
+      <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label
+          for="{{ form.min_age.id_for_label }}"
+          class="mb-1 block text-sm font-medium text-stone-700"
+          >ዝቅተኛ ዕድሜ</label
+        >
+        <input
+          type="number"
+          min="0"
+          name="{{ form.min_age.html_name }}"
+          id="{{ form.min_age.id_for_label }}"
+          value="{{ form.min_age.value|default_if_none:'' }}"
+          class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600"
+        />
+        {% for error in form.min_age.errors %}
+        <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+        {% endfor %}
+      </div>
+      <div>
+        <label
+          for="{{ form.max_age.id_for_label }}"
+          class="mb-1 block text-sm font-medium text-stone-700"
+          >ከፍተኛ ዕድሜ</label
+        >
+        <input
+          type="number"
+          min="0"
+          name="{{ form.max_age.html_name }}"
+          id="{{ form.max_age.id_for_label }}"
+          value="{{ form.max_age.value|default_if_none:'' }}"
+          class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600"
+        />
+        {% for error in form.max_age.errors %}
+        <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <label
+        for="{{ form.display_order.id_for_label }}"
+        class="mb-1 block text-sm font-medium text-stone-700"
+        >የዝርዝር ቅደም ተከተል</label
+      >
+      <input
+        type="number"
+        min="0"
+        name="{{ form.display_order.html_name }}"
+        id="{{ form.display_order.id_for_label }}"
+        value="{{ form.display_order.value|default:0 }}"
+        class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600"
+      />
+      {% for error in form.display_order.errors %}
+      <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <label class="flex items-center gap-2 text-sm text-stone-700">
+      <input
+        type="checkbox"
+        name="{{ form.is_active.html_name }}"
+        id="{{ form.is_active.id_for_label }}"
+        {%
+        if
+        form.is_active.value
+        or
+        is_new
+        %}checked{%
+        endif
+        %}
+        class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600"
+      />
+      ንቁ ክፍል
+    </label>
+
+    <div class="flex items-center gap-3">
+      <button
+        type="submit"
+        class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+      >
+        አስቀምጥ
+      </button>
+      <a
+        href="{% url 'school:class_list' %}"
+        class="text-sm text-stone-600 hover:text-stone-900"
+        >ተመለስ</a
+      >
+    </div>
+  </form>
+</div>
+{% endblock %}

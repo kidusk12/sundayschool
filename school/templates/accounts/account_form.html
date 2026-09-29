@@ -1,0 +1,134 @@
+{% extends "base.html" %} {% block title %}{% if is_new %}አዲስ አካውንት{% else
+%}አካውንት አስተካክል{% endif %} · የሰንበት ትምህርት ቤት{% endblock %} {% block content %}
+<div class="mx-auto max-w-md">
+  <h1 class="mb-6 text-2xl font-semibold text-emerald-900">
+    {% if is_new %}አዲስ አካውንት{% else %}{{ account.username }} — አስተካክል{% endif %}
+  </h1>
+
+  <form
+    method="post"
+    class="space-y-4 rounded-md border border-stone-200 bg-white p-5"
+  >
+    {% csrf_token %} {% if form.non_field_errors %}
+    <div
+      class="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800"
+    >
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %} {% if is_new %}
+    <div>
+      <label
+        for="{{ form.username.id_for_label }}"
+        class="mb-1 block text-sm font-medium text-stone-700"
+        >የተጠቃሚ ስም</label
+      >
+      <input
+        type="text"
+        name="{{ form.username.html_name }}"
+        id="{{ form.username.id_for_label }}"
+        value="{{ form.username.value|default:'' }}"
+        autocomplete="off"
+        autofocus
+        required
+        class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600"
+      />
+      {% for error in form.username.errors %}
+      <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <div x-data="{ show: false }">
+      <label
+        for="{{ form.password.id_for_label }}"
+        class="mb-1 block text-sm font-medium text-stone-700"
+        >የመጀመሪያ የይለፍ ቃል</label
+      >
+      <input
+        :type="show ? 'text' : 'password'"
+        name="{{ form.password.html_name }}"
+        id="{{ form.password.id_for_label }}"
+        autocomplete="new-password"
+        required
+        class="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-emerald-600 focus:ring-emerald-600"
+      />
+      {% for error in form.password.errors %}
+      <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+      {% endfor %}
+      <label class="mt-2 flex items-center gap-2 text-xs text-stone-600">
+        <input
+          type="checkbox"
+          x-model="show"
+          class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600"
+        />
+        የይለፍ ቃሉን አሳይ
+      </label>
+      <p class="mt-1 text-xs text-stone-500">
+        ተጠቃሚው በመጀመሪያ ሲገባ አዲስ የይለፍ ቃል እንዲያስገባ ይገደዳል።
+      </p>
+    </div>
+    {% endif %}
+
+    <fieldset>
+      <legend class="mb-2 text-sm font-medium text-stone-700">
+        የተመደቡ ክፍሎች
+      </legend>
+      <div class="space-y-1">
+        {% for checkbox in form.classrooms %}
+        <label class="flex items-center gap-2 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            name="{{ form.classrooms.html_name }}"
+            value="{{ checkbox.data.value }}"
+            {%
+            if
+            checkbox.data.selected
+            %}checked{%
+            endif
+            %}
+            class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600"
+          />
+          {{ checkbox.choice_label }}
+        </label>
+        {% endfor %}
+      </div>
+      {% for error in form.classrooms.errors %}
+      <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+      {% endfor %}
+    </fieldset>
+
+    {% if not is_new %}
+    <label class="flex items-center gap-2 text-sm text-stone-700">
+      <input
+        type="checkbox"
+        name="{{ form.is_active.html_name }}"
+        id="{{ form.is_active.id_for_label }}"
+        {%
+        if
+        form.is_active.value
+        %}checked{%
+        endif
+        %}
+        class="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600"
+      />
+      አካውንቱ ንቁ ነው (ካልተመረጠ መግባት አይችልም)
+    </label>
+    {% endif %}
+
+    <div class="flex items-center gap-3">
+      <button
+        type="submit"
+        class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+      >
+        አስቀምጥ
+      </button>
+      <a
+        href="{% url 'school:account_list' %}"
+        class="text-sm text-stone-600 hover:text-stone-900"
+        >ተመለስ</a
+      >
+    </div>
+  </form>
+</div>
+{% endblock %}

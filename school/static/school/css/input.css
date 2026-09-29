@@ -1,0 +1,32 @@
+@import "tailwindcss" source(none);
+@source "../../../templates";
+@source "../js";
+
+@theme {
+  --font-sans: "Noto Sans Ethiopic", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  [x-cloak] {
+    display: none !important;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-emerald-600);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .table-scroll {
+    @apply overflow-x-auto rounded-md border border-stone-200;
+  }
+
+  .data-table {
+    @apply w-full min-w-max border-collapse text-sm;
+  }
+
+  .data-table thead th {
+    @apply sticky top-0 border-b border-stone-200 bg-stone-100 px-2 py-2 text-center font-medium text-stone-600;
+  }
+}

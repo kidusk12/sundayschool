@@ -1,0 +1,29 @@
+{% load ethio %}
+<div id="student-search-result">
+  {% if searched and match %}
+  <div class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm">
+    <p class="font-semibold text-amber-900">ተመሳሳይ ስም ያለው ተማሪ ተገኝቷል</p>
+    {% if match.full_detail %}
+    <p class="mt-1 text-stone-700">
+      {{ match.student.full_name }} — {{ match.student.classroom.name }} ({{
+      match.student.registered_at|date:"Y-m-d" }} ተመዝግቧል)
+    </p>
+    <a
+      href="{% url 'school:student_detail' student_id=match.student.pk %}"
+      class="mt-2 inline-block text-emerald-800 underline"
+      >ዝርዝር ይመልከቱ</a
+    >
+    {% else %}
+    <p class="mt-1 text-stone-700">
+      ይህ ተማሪ በ{{ match.student.registered_at|date:"Y-m-d" }} ተመዝግቧል፣ ነገር ግን የተለየ
+      ክፍል ስለሆነ ዝርዝር ማየት አይቻልም።
+    </p>
+    {% endif %}
+    <p class="mt-2 text-xs text-stone-500">
+      ተማሪውን ለመመዝገብ ከፈለጉ ከታች ያለውን ቅጽ ይቀጥሉ።
+    </p>
+  </div>
+  {% elif searched %}
+  <p class="text-sm text-emerald-700">ተመሳሳይ ስም ያለው ተማሪ አልተገኘም — መመዝገብ ይችላሉ።</p>
+  {% endif %}
+</div>

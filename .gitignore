@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+staticfiles/
+media/
+
+# Environment (real secrets — never commit)
+.env
+
+# Compiled Tailwind output — regenerated from input.css, not source of truth
+school/static/school/css/output.css
+
+# Tailwind CLI binary (platform-specific, large)
+tailwindcss.exe
+
+# Editor
+.vscode/

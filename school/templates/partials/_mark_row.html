@@ -1,0 +1,60 @@
+{% load ethio %}
+<tr id="mark-row-{{ row.mark.pk }}" class="border-t border-stone-100">
+  <td class="px-2 py-1 text-center text-stone-500">{{ row.n }}</td>
+  <td class="px-2 py-1">{{ row.student.full_name }}</td>
+
+  {% for column in columns %}
+  <td class="border-l border-stone-100 px-1 py-1">
+    <input
+      type="text"
+      inputmode="decimal"
+      class="w-16 rounded border border-stone-200 px-1 py-0.5 text-center text-sm focus:border-emerald-600 focus:ring-emerald-600"
+      value="{{ row.scores|dict_get:column.pk|default_if_none:'' }}"
+      hx-post="{% url 'school:mark_list_update_cell' mark_list_id=row.mark.mark_list_id %}"
+      hx-trigger="change"
+      hx-target="#mark-row-{{ row.mark.pk }}"
+      hx-swap="outerHTML"
+      hx-vals='{"mark_id": "{{ row.mark.pk }}", "column_id": "{{ column.pk }}"}'
+      name="score"
+    />
+  </td>
+  {% endfor %}
+
+  <td class="border-l border-stone-100 px-1 py-1">
+    <input
+      type="text"
+      inputmode="decimal"
+      class="w-16 rounded border border-emerald-300 bg-emerald-50 px-1 py-0.5 text-center text-sm font-semibold focus:border-emerald-600 focus:ring-emerald-600"
+      value="{{ row.total|default_if_none:'' }}"
+      hx-post="{% url 'school:mark_list_update_cell' mark_list_id=row.mark.mark_list_id %}"
+      hx-trigger="change"
+      hx-target="#mark-row-{{ row.mark.pk }}"
+      hx-swap="outerHTML"
+      hx-vals='{"mark_id": "{{ row.mark.pk }}"}'
+      name="total"
+    />
+  </td>
+
+  <td class="px-2 py-1 text-center">
+    <a
+      href="{% url 'school:request_removal' kind='mark' object_id=row.mark.pk %}"
+      class="text-stone-400 hover:text-red-600"
+      title="ማስወገጃ ጠይቅ"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4 inline"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </a>
+  </td>
+</tr>

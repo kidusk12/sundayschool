@@ -1,0 +1,74 @@
+{% extends "base.html" %} {% block title %}አካውንቶች · የሰንበት ትምህርት ቤት{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold text-emerald-900">አካውንቶች</h1>
+  <a
+    href="{% url 'school:account_create' %}"
+    class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+  >
+    አዲስ አካውንት
+  </a>
+</div>
+
+{% if accounts %}
+<div class="table-scroll bg-white">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th class="text-left">የተጠቃሚ ስም</th>
+        <th class="text-left">ክፍሎች</th>
+        <th>ሁኔታ</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account in accounts %}
+      <tr class="border-t border-stone-100">
+        <td class="px-3 py-2 font-medium">{{ account.username }}</td>
+        <td class="px-3 py-2 text-stone-600">
+          {% for assignment in account.class_assignments.all %}
+          <span
+            class="mr-1 inline-block rounded bg-stone-100 px-2 py-0.5 text-xs"
+            >{{ assignment.classroom.name }}</span
+          >
+          {% empty %}
+          <span class="text-stone-400">—</span>
+          {% endfor %}
+        </td>
+        <td class="px-3 py-2 text-center">
+          {% if account.is_active %}
+          <span
+            class="rounded bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800"
+            >ንቁ</span
+          >
+          {% else %}
+          <span class="rounded bg-stone-100 px-2 py-0.5 text-xs text-stone-600"
+            >ታግዷል</span
+          >
+          {% endif %}
+        </td>
+        <td class="whitespace-nowrap px-3 py-2 text-center text-sm">
+          <a
+            href="{% url 'school:account_edit' user_id=account.pk %}"
+            class="text-stone-600 hover:text-stone-900"
+            >አስተካክል</a
+          >
+          <span class="mx-1 text-stone-300">|</span>
+          <a
+            href="{% url 'school:account_reset_password' user_id=account.pk %}"
+            class="text-stone-600 hover:text-stone-900"
+            >የይለፍ ቃል አስጀምር</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div
+  class="rounded-md border border-dashed border-stone-300 bg-white p-6 text-center text-sm text-stone-600"
+>
+  እስካሁን ምንም አካውንት የለም። ለክፍል መሪዎች አካውንት ይፍጠሩ።
+</div>
+{% endif %} {% endblock %}

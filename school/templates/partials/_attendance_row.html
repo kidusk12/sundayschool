@@ -1,0 +1,36 @@
+{% load ethio %}
+<tr id="attendance-row-{{ row.row.pk }}" class="border-t border-stone-100">
+    <td class="px-2 py-1 text-center text-stone-500">{{ row.n }}</td>
+    <td class="px-2 py-1">{{ row.student.full_name }}</td>
+
+    {% for cell in row.cells %}
+    <td class="border-l border-stone-100 px-1 py-1 text-center">
+        <select
+            class="w-full rounded border-0 bg-transparent text-center text-sm focus:ring-1 focus:ring-emerald-600"
+            hx-post="{% url 'school:attendance_mark_cell' sheet_id=row.row.sheet_id %}"
+            hx-target="#attendance-row-{{ row.row.pk }}"
+            hx-swap="outerHTML"
+            hx-vals='{"row_id": "{{ row.row.pk }}", "sunday": "{{ cell.date|date:'Y-m-d' }}"}'
+            name="status"
+        >
+            <option value="" {% if cell.status == "" %}selected{% endif %}>—</option>
+            <option value="present" {% if cell.status == "present" %}selected{% endif %}>ተ</option>
+            <option value="absent" {% if cell.status == "absent" %}selected{% endif %}>ቀ</option>
+            <option value="permission" {% if cell.status == "permission" %}selected{% endif %}>ፈ</option>
+        </select>
+    </td>
+    {% endfor %}
+
+    <td class="border-l border-stone-100 px-2 py-1 text-center text-sm text-stone-600">{{ row.present }}</td>
+    <td class="px-2 py-1 text-center text-sm text-stone-600">{{ row.absent }}</td>
+    <td class="px-2 py-1 text-center text-sm text-stone-600">{{ row.permission }}</td>
+
+    <td class="px-2 py-1 text-center">
+        <a href="{% url 'school:request_removal' kind='row' object_id=row.row.pk %}"
+           class="text-stone-400 hover:text-red-600" title="ማስወገጃ ጠይቅ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </a>
+    </td>
+</tr>

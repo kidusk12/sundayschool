@@ -1,0 +1,18 @@
+{% if messages %}
+<div class="mb-4 space-y-2">
+  {% for message in messages %}
+  <div
+    class="flex items-start justify-between rounded-md border px-3 py-2 text-sm {% if message.tags == 'success' %}border-emerald-300 bg-emerald-50 text-emerald-800 {% elif message.tags == 'error' %}border-red-300 bg-red-50 text-red-800 {% elif message.tags == 'warning' %}border-amber-300 bg-amber-50 text-amber-800 {% else %}border-stone-300 bg-stone-50 text-stone-700{% endif %}"
+  >
+    <span>{{ message }}</span>
+    <button
+      type="button"
+      @click="$el.closest('div').remove()"
+      class="ml-3 shrink-0 text-stone-400 hover:text-stone-600"
+    >
+      ✕
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,31 @@
+{% load ethio %}
+<tr id="roster-row-{{ row.row.pk }}" class="border-t border-stone-100">
+  <td class="px-2 py-1 text-center text-stone-500">{{ row.n }}</td>
+  <td class="px-2 py-1">{{ row.student.full_name }}</td>
+
+  {% for column in columns %}
+  <td class="border-l border-stone-100 px-1 py-1">
+    <input
+      type="text"
+      inputmode="decimal"
+      class="w-16 rounded border border-stone-200 px-1 py-0.5 text-center text-sm focus:border-emerald-600 focus:ring-emerald-600"
+      value="{{ row.scores|dict_get:column.pk|default_if_none:'' }}"
+      hx-post="{% url 'school:roster_update_cell' roster_id=row.row.roster_id %}"
+      hx-trigger="change"
+      hx-target="#roster-row-{{ row.row.pk }}"
+      hx-swap="outerHTML"
+      hx-vals='{"row_id": "{{ row.row.pk }}", "column_id": "{{ column.pk }}"}'
+      name="score"
+    />
+  </td>
+  {% endfor %}
+
+  <td
+    class="border-l border-stone-100 px-2 py-1 text-center text-sm font-semibold text-emerald-800"
+  >
+    {{ row.average|default_if_none:"—" }}
+  </td>
+  <td class="px-2 py-1 text-center text-sm font-semibold text-stone-700">
+    {{ row.rank|default_if_none:"—" }}
+  </td>
+</tr>

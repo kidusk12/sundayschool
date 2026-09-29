@@ -1,0 +1,73 @@
+{% extends "base.html" %} {% block title %}ክፍሎች · የሰንበት ትምህርት ቤት{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold text-emerald-900">ክፍሎች</h1>
+  <a
+    href="{% url 'school:class_create' %}"
+    class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+  >
+    አዲስ ክፍል
+  </a>
+</div>
+
+{% if classrooms %}
+<div class="table-scroll bg-white">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th class="text-left">ስም</th>
+        <th>ዕድሜ</th>
+        <th>ቅደም ተከተል</th>
+        <th>ሁኔታ</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for classroom in classrooms %}
+      <tr class="border-t border-stone-100">
+        <td class="px-3 py-2">
+          <a
+            href="{% url 'school:class_detail' classroom_id=classroom.pk %}"
+            class="font-medium text-emerald-800 hover:underline"
+            >{{ classroom.name }}</a
+          >
+        </td>
+        <td class="px-3 py-2 text-center text-stone-600">
+          {% if classroom.min_age or classroom.max_age %} {{
+          classroom.min_age|default_if_none:"—" }} – {{
+          classroom.max_age|default_if_none:"—" }} {% else %}—{% endif %}
+        </td>
+        <td class="px-3 py-2 text-center text-stone-600">
+          {{ classroom.display_order }}
+        </td>
+        <td class="px-3 py-2 text-center">
+          {% if classroom.is_active %}
+          <span
+            class="rounded bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800"
+            >ንቁ</span
+          >
+          {% else %}
+          <span class="rounded bg-stone-100 px-2 py-0.5 text-xs text-stone-600"
+            >ንቁ አይደለም</span
+          >
+          {% endif %}
+        </td>
+        <td class="px-3 py-2 text-center">
+          <a
+            href="{% url 'school:class_edit' classroom_id=classroom.pk %}"
+            class="text-sm text-stone-600 hover:text-stone-900"
+            >አስተካክል</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div
+  class="rounded-md border border-dashed border-stone-300 bg-white p-6 text-center text-sm text-stone-600"
+>
+  እስካሁን ምንም ክፍል የለም። መጀመሪያ አዲስ ክፍል ይፍጠሩ።
+</div>
+{% endif %} {% endblock %}
