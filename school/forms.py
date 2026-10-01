@@ -129,6 +129,11 @@ class RosterColumnForm(forms.ModelForm):
             "subject_name": {"required": "የትምህርት ስም ያስፈልጋል።"},
         }
 
+class RosterTableForm(forms.ModelForm):
+    class Meta:
+        model = RosterTable
+        fields = ["year", "semester"]
+
 class RosterColumnForm(forms.ModelForm):
     class Meta:
         model = RosterColumn

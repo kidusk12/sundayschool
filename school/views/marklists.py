@@ -19,8 +19,6 @@ def mark_list_list(request, classroom_id):
 
 @permissions.classroom_access_required(url_kwarg="classroom_id")
 def mark_list_create(request, classroom_id):
-    """A brand-new list — zero students, zero columns (SRS §4.4). This is
-    unrelated to 'duplicate' below, which copies an existing list instead."""
     form = MarkListForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         mark_list = form.save(commit=False)
@@ -69,7 +67,6 @@ def mark_list_detail(request, mark_list_id):
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def mark_list_edit_header(request, mark_list_id):
-    """Teacher/subject/year/semester — editable at any time, never locked (§4.4)."""
     form = MarkListForm(request.POST or None, instance=request.mark_list)
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -82,7 +79,6 @@ def mark_list_edit_header(request, mark_list_id):
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def add_student(request, mark_list_id):
-    """The manual 'Add student' action — the only way a row reaches this list (§4.3)."""
     mark_list = request.mark_list
     student = get_object_or_404(Student, pk=request.POST.get("student_id"), classroom=mark_list.classroom)
     try:
@@ -97,8 +93,6 @@ def add_student(request, mark_list_id):
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def column_create(request, mark_list_id):
-    """Owner-defined columns — addable/editable/removable any time, no removal-
-    request gate (this is list *structure*, not the real data §4.7 protects)."""
     mark_list = request.mark_list
     form = MarkColumnForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -122,6 +116,7 @@ def column_create(request, mark_list_id):
         return HttpResponse(table_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>')
     return redirect("school:mark_list_detail", mark_list_id=mark_list.pk)
 
+
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def column_delete(request, mark_list_id, column_id):
     mark_list = request.mark_list
@@ -135,7 +130,6 @@ def column_delete(request, mark_list_id, column_id):
 
 
 def _parse_decimal(raw):
-    """('123.5', True) style — returns (value, ok). Blank is allowed and means 'clear'."""
     raw = (raw or "").strip()
     if not raw:
         return None, True
@@ -147,7 +141,6 @@ def _parse_decimal(raw):
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def update_cell(request, mark_list_id):
-    """One field at a time: either the Total, or one column's score."""
     mark_list = request.mark_list
     mark = get_object_or_404(Mark, pk=request.POST.get("mark_id"), mark_list=mark_list)
 
@@ -176,13 +169,14 @@ def update_cell(request, mark_list_id):
                 "total": mark.total, "scores": by_column,
             },
             "columns": list(mark_list.columns.all()),
+            "oob": True,
         })
         flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
         return HttpResponse(
-            row_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>'
+            f"<template>{row_html}</template>"
+            f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>'
         )
     return redirect("school:mark_list_detail", mark_list_id=mark_list.pk)
-
 
 @permissions.mark_list_access_required(url_kwarg="mark_list_id")
 def mark_list_export(request, mark_list_id):

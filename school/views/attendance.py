@@ -1,12 +1,13 @@
 from datetime import date
 
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from ..audit import log_action
-from ..models import ActivityLog
-    
+from django.template.loader import render_to_string
+
 from .. import ethiopic, exports, permissions, services
-from ..models import AttendanceEntry, AttendanceRow, AttendanceSheet, Student
+from ..audit import log_action
+from ..models import ActivityLog, AttendanceEntry, AttendanceRow, AttendanceSheet, Student
 
 
 @permissions.classroom_access_required(url_kwarg="classroom_id")
@@ -102,7 +103,11 @@ def add_student(request, sheet_id):
         messages.error(request, str(exc))
 
     if request.htmx:
-        return render(request, "partials/_attendance_table.html", _sheet_context(sheet))
+        table_html = render_to_string(
+            request=request, template_name="partials/_attendance_table.html", context=_sheet_context(sheet)
+        )
+        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+        return HttpResponse(table_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>')
     return redirect("school:attendance_sheet_detail", sheet_id=sheet.pk)
 
 

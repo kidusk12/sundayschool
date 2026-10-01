@@ -13,7 +13,9 @@
             </button>
         </form>
 
-        <form method="post" action="{% url 'school:roster_calculate' roster_id=roster.pk %}">
+        <form hx-post="{% url 'school:roster_calculate' roster_id=roster.pk %}"
+              hx-target="#roster-table-container" hx-swap="outerHTML"
+              hx-sync="body:queue all">
             {% csrf_token %}
             <button type="submit"
                     class="rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900">

@@ -66,6 +66,7 @@ def roster_edit_header(request, roster_id):
         "form": form, "classroom": request.roster.classroom, "is_new": False, "roster": request.roster,
     })
 
+
 @permissions.roster_access_required(url_kwarg="roster_id")
 def column_create(request, roster_id):
     roster = request.roster
@@ -124,29 +125,37 @@ def update_cell(request, roster_id):
     else:
         messages.error(request, "ትክክለኛ ቁጥር ያስገቡ።")
 
-    if request.htmx:
-        n = RosterRow.objects.filter(
-            roster=roster, student__name_key__lt=row.student.name_key
-        ).count() + 1
-        by_column = {s.column_id: s.score for s in row.scores.all()}
-        row_html = render_to_string(request=request, template_name="partials/_roster_row.html", context={
-            "row": {
-                "n": n, "row": row, "student": row.student,
-                "average": row.average, "rank": row.rank, "scores": by_column,
-            },
-            "columns": list(roster.columns.all()),
-        })
-        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
-        return HttpResponse(
-            row_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>'
-        )
-    return redirect("school:roster_detail", roster_id=roster.pk)
-
+        if request.htmx:
+            n = RosterRow.objects.filter(
+                roster=roster, student__name_key__lt=row.student.name_key
+            ).count() + 1
+            by_column = {s.column_id: s.score for s in row.scores.all()}
+            row_html = render_to_string(request=request, template_name="partials/_roster_row.html", context={
+                "row": {
+                    "n": n, "row": row, "student": row.student,
+                    "average": row.average, "rank": row.rank, "scores": by_column,
+                },
+                "columns": list(roster.columns.all()),
+                "oob": True,
+            })
+            flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+            return HttpResponse(
+                f"<template>{row_html}</template>"
+                f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>'
+            )
+        return redirect("school:roster_detail", roster_id=roster.pk)
 
 @permissions.roster_access_required(url_kwarg="roster_id")
 def calculate(request, roster_id):
     services.calculate_roster(roster=request.roster, user=request.user)
     messages.success(request, "አማካኝ እና ደረጃ ተሰልቷል።")
+
+    if request.htmx:
+        table_html = render_to_string(
+            request=request, template_name="partials/_roster_table.html", context=_roster_context(request.roster)
+        )
+        flash_html = render_to_string(request=request, template_name="partials/_flash.html", context={})
+        return HttpResponse(table_html + f'<div id="flash-container" hx-swap-oob="true">{flash_html}</div>')
     return redirect("school:roster_detail", roster_id=request.roster.pk)
 
 
