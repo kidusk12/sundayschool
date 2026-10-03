@@ -1,4 +1,5 @@
-{% extends "base.html" %} {% block title %}ዳሽቦርድ · የሰንበት ትምህርት ቤት{% endblock %}
+{% extends "base.html" %}
+{% block title %}ዳሽቦርድ · የሰንበት ትምህርት ቤት{% endblock %}
 {% block content %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
   <h1 class="text-2xl font-semibold text-emerald-900">የእኔ ክፍሎች</h1>
@@ -18,12 +19,7 @@
     class="rounded-md border border-stone-200 bg-white p-4 hover:border-emerald-600"
   >
     <p class="text-lg font-medium text-stone-900">{{ classroom.name }}</p>
-    {% if classroom.min_age or classroom.max_age %}
-    <p class="mt-1 text-sm text-stone-500">
-      ዕድሜ: {{ classroom.min_age|default_if_none:"—" }} – {{
-      classroom.max_age|default_if_none:"—" }}
-    </p>
-    {% endif %} {% if not classroom.is_active %}
+    {% if not classroom.is_active %}
     <p class="mt-2 text-xs text-stone-500">ንቁ አይደለም</p>
     {% endif %}
   </a>
@@ -35,4 +31,5 @@
 >
   እስካሁን ምንም ክፍል አልተመደበልዎትም። ኃላፊውን ይጠይቁ።
 </div>
-{% endif %} {% endblock %}
+{% endif %}
+{% endblock %}

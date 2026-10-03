@@ -5,10 +5,9 @@
     <h1 class="text-2xl font-semibold text-emerald-900">
       {{ classroom.name }}
     </h1>
-    {% if classroom.min_age or classroom.max_age %}
+        {% if classroom.min_age or classroom.max_age %}
     <p class="mt-1 text-sm text-stone-500">
-      ዕድሜ: {{ classroom.min_age|default_if_none:"—" }} – {{
-      classroom.max_age|default_if_none:"—" }}
+      ዕድሜ: {{ classroom.min_age|default_if_none:"—" }} – {{ classroom.max_age|default_if_none:"—" }}
     </p>
     {% endif %}
   </div>
