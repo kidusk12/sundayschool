@@ -1,0 +1,53 @@
+{% extends "pdf/base_pdf.html" %}
+{% load ethio %}
+
+{% block title %}{{ sheet.classroom.name }} — {{ title }}{% endblock %}
+
+{% block body %}
+<h1>{{ sheet.classroom.name }} — መገኘት</h1>
+<p class="sub">{{ title }}{% if sundays %} · {{ sundays|length }} እሁዶች{% endif %}</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th class="name">ስም</th>
+            {% if sheet.is_template %}
+                {% for i in "12345" %}<th>ሳምንት {{ i }}</th>{% endfor %}
+            {% else %}
+                {% for sunday in sundays %}<th>{{ sunday|eth_short }}</th>{% endfor %}
+            {% endif %}
+            <th>ተገኝቷል</th>
+            <th>ቀርቷል</th>
+            <th>ፈቃድ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.n }}</td>
+            <td class="name">{{ row.student.full_name }}</td>
+            {% if sheet.is_template %}
+                {% for i in "12345" %}<td></td>{% endfor %}
+            {% else %}
+                {% for cell in row.cells %}
+                <td>
+                    {% if cell.status == "present" %}ተ
+                    {% elif cell.status == "absent" %}ቀ
+                    {% elif cell.status == "permission" %}ፈ
+                    {% endif %}
+                </td>
+                {% endfor %}
+            {% endif %}
+            <td>{{ row.present|default:"" }}</td>
+            <td>{{ row.absent|default:"" }}</td>
+            <td>{{ row.permission|default:"" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if sheet.is_template %}8{% else %}{{ sundays|length|add:5 }}{% endif %}">ምንም ተማሪ አልተጨመረም።</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p class="footer-note">ተ = ተገኝቷል · ቀ = ቀርቷል · ፈ = ፈቃድ</p>
+{% endblock %}

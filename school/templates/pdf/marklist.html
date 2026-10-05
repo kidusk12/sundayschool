@@ -1,0 +1,41 @@
+{% extends "pdf/base_pdf.html" %}
+{% load ethio %}
+
+{% block title %}{{ mark_list.classroom.name }} — {{ mark_list.name }}{% endblock %}
+
+{% block body %}
+<h1>{{ mark_list.classroom.name }} — {{ mark_list.name }}</h1>
+<p class="sub">
+    {% if mark_list.teacher %}አስተማሪ: {{ mark_list.teacher }} · {% endif %}
+    {% if mark_list.subject %}የትምህርት ዓይነት: {{ mark_list.subject }} · {% endif %}
+    {% if mark_list.year %}ዓመት: {{ mark_list.year }} · {% endif %}
+    {% if mark_list.semester %}ወሰነ ትምህርት: {{ mark_list.semester }}{% endif %}
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th class="name">ስም</th>
+            {% for column in columns %}
+            <th>{{ column.name }}{% if column.max_score %} ({{ column.max_score }}){% endif %}</th>
+            {% endfor %}
+            <th>ጠቅላላ (/100)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.n }}</td>
+            <td class="name">{{ row.student.full_name }}</td>
+            {% for column in columns %}
+            <td>{{ row.scores|dict_get:column.pk|default_if_none:"" }}</td>
+            {% endfor %}
+            <td>{{ row.total|default_if_none:"" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="{{ columns|length|add:3 }}">ምንም ተማሪ አልተጨመረም።</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

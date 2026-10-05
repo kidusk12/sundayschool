@@ -1,0 +1,42 @@
+{% extends "pdf/base_pdf.html" %}
+{% load ethio %}
+
+{% block title %}{{ roster.classroom.name }} — ሮስተር{% endblock %}
+
+{% block body %}
+<h1>{{ roster.classroom.name }} — ሮስተር</h1>
+<p class="sub">
+    {% if roster.year %}ዓመት: {{ roster.year }} · {% endif %}
+    {% if roster.semester %}ወሰነ ትምህርት: {{ roster.semester }} · {% endif %}
+    {% if roster.calculated_at %}ተሰልቷል: {{ roster.calculated_at|eth_date }}{% else %}ገና አልተሰላም{% endif %}
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th class="name">ስም</th>
+            {% for column in columns %}
+            <th>{{ column.subject_name }}</th>
+            {% endfor %}
+            <th>አማካኝ</th>
+            <th>ደረጃ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr{% if row.rank == 1 %} class="rank-1"{% elif row.rank == 2 %} class="rank-2"{% elif row.rank == 3 %} class="rank-3"{% endif %}>
+            <td>{{ row.n }}</td>
+            <td class="name">{{ row.student.full_name }}</td>
+            {% for column in columns %}
+            <td>{{ row.scores|dict_get:column.pk|default_if_none:"" }}</td>
+            {% endfor %}
+            <td>{{ row.average|default_if_none:"" }}</td>
+            <td>{{ row.rank|default_if_none:"" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="{{ columns|length|add:4 }}">ምንም ተማሪ የለም።</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
